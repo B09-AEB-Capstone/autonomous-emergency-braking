@@ -40,15 +40,30 @@ void WebSocket::loop() {
 }
 
 void WebSocket::connectToWebSocket() {
-    Serial.println("Connecting to WebSocket server...");
+    Serial.print("Connecting to WebSocket server at ");
+    Serial.print(_serverAddress);
+    Serial.print(":");
+    Serial.println(_port);
+
     _isConnected = client.connect(_serverAddress, _port, "/");
 
     if (_isConnected) {
         Serial.println("WebSocket connection opened");
     } else {
-        Serial.println("WebSocket connection failed, retrying...");
+        Serial.println("WebSocket connection failed");
+        
+        Serial.print("WiFi Status: ");
+        switch (WiFi.status()) {
+            case WL_CONNECTED: Serial.println("Connected"); break;
+            case WL_NO_SSID_AVAIL: Serial.println("No SSID Available"); break;
+            case WL_CONNECT_FAILED: Serial.println("Connect Failed"); break;
+            case WL_CONNECTION_LOST: Serial.println("Connection Lost"); break;
+            case WL_DISCONNECTED: Serial.println("Disconnected"); break;
+            default: Serial.println("Unknown Status"); break;
+        }
     }
 }
+
 
 void WebSocket::send(const String &message) {
     if (_isConnected) {
