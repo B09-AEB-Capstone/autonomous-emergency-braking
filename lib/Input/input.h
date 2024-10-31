@@ -6,6 +6,7 @@ class Input {
   public:
     Input();             // Constructor
     void printMessage(); // Method to print a message
+    void generateRandomData(float &velocity, float &distance);
 };
 
 #endif
