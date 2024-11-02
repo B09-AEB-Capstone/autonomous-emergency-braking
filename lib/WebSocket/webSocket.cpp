@@ -1,8 +1,11 @@
 #include "WebSocket.h"
 #include <ArduinoWebsockets.h>
 #include <WiFi.h>
+#include <ArduinoJson.h> 
 
 using namespace websockets;
+
+extern int distanceBack;
 
 WebsocketsClient client;
 
@@ -51,7 +54,6 @@ void WebSocket::connectToWebSocket() {
         Serial.println("WebSocket connection opened");
     } else {
         Serial.println("WebSocket connection failed");
-        
         Serial.print("WiFi Status: ");
         switch (WiFi.status()) {
             case WL_CONNECTED: Serial.println("Connected"); break;
@@ -64,7 +66,6 @@ void WebSocket::connectToWebSocket() {
     }
 }
 
-
 void WebSocket::send(const String &message) {
     if (_isConnected) {
         client.send(message);
@@ -75,6 +76,25 @@ void WebSocket::send(const String &message) {
 
 void WebSocket::onMessage(WebsocketsMessage message) {
     Serial.printf("Received: %s\n", message.data().c_str());
+
+    // Parse JSON message
+    StaticJsonDocument<200> doc;
+    DeserializationError error = deserializeJson(doc, message.data());
+
+    if (error) {
+        Serial.print("Failed to parse message as JSON: ");
+        Serial.println(error.c_str());
+        return;
+    }
+
+    // Extract initialSpeed value and assign it to distanceBack
+    if (doc.containsKey("initialSpeed")) {
+        distanceBack = doc["initialSpeed"];
+        Serial.print("initialSpeed set to distanceBack: ");
+        Serial.println(distanceBack);
+    } else {
+        Serial.println("initialSpeed not found in the message");
+    }
 }
 
 void WebSocket::onEvent(WebsocketsEvent event, String data) {

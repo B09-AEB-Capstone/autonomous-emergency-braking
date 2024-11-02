@@ -5,6 +5,7 @@
 #include <WiFi.h>
 
 using namespace websockets;
+extern int distanceBack;
 
 class WebSocket {
 public:
