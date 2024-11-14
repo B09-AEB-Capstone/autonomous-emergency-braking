@@ -6,7 +6,7 @@ class motor
 {
 public:
     int pin1, pin2, pin3, pin4;
-    int _dutyCycle = 255;
+    int _dutyCycle = 0;
 
     motor(int pin1, int pin2, int pin3, int pin4);
     void apply3StageBrake(float speed);
@@ -17,7 +17,7 @@ public:
     void accelerateMotor();
 
 private:
-    const int _freq = 30000;
+    const int _freq = 5000;
     const int _resolution = 8;
 
     unsigned long _previousBrakingMillis = 0;
