@@ -1,4 +1,4 @@
-#include "fuzzy.h"
+#include "fuzzyBrakeController.h"
 
 FuzzyBrakeController::FuzzyBrakeController()
 {

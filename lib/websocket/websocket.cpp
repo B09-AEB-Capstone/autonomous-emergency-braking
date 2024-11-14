@@ -1,8 +1,10 @@
 #include "websocket.h"
 
+#include "motor.h"
+
 using namespace websockets;
 
-extern int initialSpeed;
+extern motor myMotor;
 
 WebsocketsClient client;
 
@@ -71,8 +73,6 @@ void WebSocket::send(const String &message)
 
 void WebSocket::onMessage(WebsocketsMessage message)
 {
-    // String receivedMessage = message.data();
-    // _brakingCategory = receivedMessage.toInt();
 
     Serial.printf("Received: %s\n", message.data().c_str());
 
@@ -89,9 +89,9 @@ void WebSocket::onMessage(WebsocketsMessage message)
     // Extract initialSpeed value and assign it to distanceBack
     if (doc.containsKey("initialSpeed"))
     {
-        initialSpeed = doc["initialSpeed"];
-        Serial.print("initialSpeed set to: ");
-        Serial.println(initialSpeed);
+        myMotor.maxSpeed = doc["initialSpeed"];
+            ledcWrite(myMotor.pin1, doc["initialSpeed"]);
+            ledcWrite(myMotor.pin3, doc["initialSpeed"]);        
     }
     else
     {

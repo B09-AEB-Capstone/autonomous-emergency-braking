@@ -7,6 +7,7 @@ class motor
 public:
     int pin1, pin2, pin3, pin4;
     int _dutyCycle = 0;
+    int maxSpeed = 0;
 
     motor(int pin1, int pin2, int pin3, int pin4);
     void apply3StageBrake(float speed);

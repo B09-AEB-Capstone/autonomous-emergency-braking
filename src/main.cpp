@@ -3,13 +3,13 @@
 
 #include "websocket.h"
 #include "motor.h"
-#include "fuzzy.h"
+#include "fuzzyBrakeController.h"
 
-const char *ssid = "akangcimoll";
-const char *password = "anakayammakansapi2";
+const char *ssid = "aegis";
+const char *password = "okemantapbos";
 
 /* websocket */
-const char *ip = "192.168.19.21";
+const char *ip = "10.42.0.1";
 const uint16_t port = 3000;
 WebSocket webSocket(ssid, password, ip, port);
 
@@ -18,9 +18,10 @@ Adafruit_VL53L1X vl53;
 unsigned long lastTime = 0;
 int16_t lastDistance = 0;
 float relativeSpeed = 0.0;
+int16_t currentDistance = 0;
 
-const int brakeDistance = 300;
-const int emergencyDistance = 50;
+const int brakeDistance = 400;
+const int emergencyDistance = 100;
 
 float speed = 0;
 float distance = 0;
@@ -67,8 +68,6 @@ void loop()
 {
   webSocket.loop();
 
-  myMotor._dutyCycle = initialSpeed;
-
   /* ultrasonik */
   // digitalWrite(trigPin, LOW);
   // delayMicroseconds(2);
@@ -78,7 +77,6 @@ void loop()
 
   // duration = pulseIn(echoPin, HIGH);
   // distanceCm = duration * SOUND_SPEED / 2;
-  // distanceInch = distanceCm * CM_TO_INCH;
   /* */
 
   // brakingCategory = brakeController.getBrakeLevel(distanceCm, myMotor._dutyCycle);
@@ -86,7 +84,7 @@ void loop()
 
   if (vl53.dataReady())
   {
-    int16_t currentDistance = vl53.distance();
+    currentDistance = vl53.distance();
     unsigned long currentTime = millis();
 
     if (currentDistance != -1)
@@ -94,13 +92,8 @@ void loop()
       float deltaTime = (currentTime - lastTime) / 1000.0;
       relativeSpeed = (currentDistance - lastDistance) / deltaTime;
 
-      brakingCategory = brakeController.getBrakeLevel(currentDistance, myMotor._dutyCycle);
-      outputName = brakeController.getBrakeLevelName(brakingCategory);
-
-      Serial.println("=====");
-      Serial.println(brakingCategory);
-      Serial.println(outputName);
-      Serial.println();
+      // brakingCategory = brakeController.getBrakeLevel(currentDistance, myMotor._dutyCycle);
+      // outputName = brakeController.getBrakeLevelName(brakingCategory);
 
       if (currentDistance < emergencyDistance)
       {
@@ -108,18 +101,7 @@ void loop()
       }
       else if (currentDistance < brakeDistance)
       {
-        if (outputName == "tiga")
-        {
           myMotor.apply3StageBrake(relativeSpeed);
-        }
-        else if (outputName == "empat")
-        {
-          myMotor.apply4StageBrake(relativeSpeed);
-        }
-        else if (outputName == "lima")
-        {
-          myMotor.apply5StageBrake(relativeSpeed);
-        }
 
         if (relativeSpeed > -30 && currentDistance >= emergencyDistance)
         {
@@ -138,17 +120,14 @@ void loop()
       Serial.print(myMotor._dutyCycle);
       Serial.println(" (0-255)");
 
-      String message = "speed: " + String(abs(relativeSpeed)) + ", distance: " + String(currentDistance);
-      webSocket.send(message);
-
       myMotor.accelerateMotor();
     }
   }
 
   // Create a JSON object to send current data
   DynamicJsonDocument jsonDoc(200);
-  jsonDoc["speed"] = speed; /* dikirim */
-  jsonDoc["distanceFront"] = distance;
+  jsonDoc["speed"] = myMotor._dutyCycle; /* dikirim */
+  jsonDoc["distanceFront"] = currentDistance;
   jsonDoc["distanceBack"] = 0;
   // Serialize JSON to a string
   String jsonString;
@@ -156,4 +135,6 @@ void loop()
 
   // Send JSON string over WebSocket
   webSocket.send(jsonString);
+
+  delay(200);
 }
