@@ -9,7 +9,7 @@ const char *ssid = "akangcimoll";
 const char *password = "anakayammakansapi2";
 
 /* websocket */
-const char *ip = "192.168.132.21";
+const char *ip = "192.168.19.21";
 const uint16_t port = 3000;
 WebSocket webSocket(ssid, password, ip, port);
 
@@ -24,30 +24,41 @@ const int emergencyDistance = 50;
 
 float speed = 0;
 float distance = 0;
-int distanceBack = 0;
+int initialSpeed = 0;
 
 motor myMotor(27, 26, 33, 32);
 
+const int trigPin = 16;
+const int echoPin = 17;
+
+#define SOUND_SPEED 0.034
+#define CM_TO_INCH 0.393701
+
+long duration;
+float distanceCm;
+float distanceInch;
+
 FuzzyBrakeController brakeController;
 int brakingCategory;
+String outputName;
 
 void setup()
 {
   Serial.begin(9600);
 
-  // Wire.begin(22, 21);
-  // if (!vl53.begin(0x29, &Wire))
-  // {
-  //   Serial.println("Error initializing VL53L1X sensor");
-  //   while (1)
-  //     delay(10);
-  // }
+  Wire.begin(22, 21);
+  if (!vl53.begin(0x29, &Wire))
+  {
+    Serial.println("Error initializing VL53L1X sensor");
+    while (1)
+      delay(10);
+  }
 
-  // vl53.startRanging();
-  // vl53.setTimingBudget(15);
+  vl53.startRanging();
+  vl53.setTimingBudget(15);
 
-  // lastTime = millis();
-  // lastDistance = vl53.distance();
+  lastTime = millis();
+  lastDistance = vl53.distance();
 
   webSocket.begin();
 }
@@ -56,82 +67,93 @@ void loop()
 {
   webSocket.loop();
 
-  // String message = "speed: " + String(speed) + ", distance to front: " + String(distance_to_front) + ", distance to back: " + String(distance_to_back);
-  // webSocket.send(message);
+  myMotor._dutyCycle = initialSpeed;
 
-  // if (vl53.dataReady())
-  // {
-  //   int16_t currentDistance = vl53.distance();
-  //   unsigned long currentTime = millis();
+  /* ultrasonik */
+  // digitalWrite(trigPin, LOW);
+  // delayMicroseconds(2);
+  // digitalWrite(trigPin, HIGH);
+  // delayMicroseconds(10);
+  // digitalWrite(trigPin, LOW);
 
-  //   if (currentDistance != -1)
-  //   {
-  //     float deltaTime = (currentTime - lastTime) / 1000.0;
-  //     relativeSpeed = (currentDistance - lastDistance) / deltaTime;
+  // duration = pulseIn(echoPin, HIGH);
+  // distanceCm = duration * SOUND_SPEED / 2;
+  // distanceInch = distanceCm * CM_TO_INCH;
+  /* */
 
-  //     if (currentDistance < emergencyDistance)
-  //     {
-  //       myMotor.rapidBraking();
-  //     }
-  //     else if (currentDistance < brakeDistance)
-  //     {
-  //       if (brakingCategory = 3)
-  //       {
-  //         myMotor.apply3StageBrake(relativeSpeed);
-  //       }
-  //       else if (brakingCategory = 4)
-  //       {
-  //         myMotor.apply4StageBrake(relativeSpeed);
-  //       }
-  //       else if (brakingCategory = 5)
-  //       {
-  //         myMotor.apply5StageBrake(relativeSpeed);
-  //       }
+  // brakingCategory = brakeController.getBrakeLevel(distanceCm, myMotor._dutyCycle);
+  // outputName = brakeController.getBrakeLevelName(brakingCategory);
 
-  //       if (relativeSpeed > -30 && currentDistance >= emergencyDistance)
-  //       {
-  //         myMotor.accelerateMotor();
-  //       }
+  if (vl53.dataReady())
+  {
+    int16_t currentDistance = vl53.distance();
+    unsigned long currentTime = millis();
 
-  //       lastDistance = currentDistance;
-  //       lastTime = currentTime;
-  //     }
-  //     brakingCategory = brakeController.getBrakeLevel(currentDistance, myMotor._dutyCycle);
-  //     String outputName = brakeController.getBrakeLevelName(brakingCategory);
+    if (currentDistance != -1)
+    {
+      float deltaTime = (currentTime - lastTime) / 1000.0;
+      relativeSpeed = (currentDistance - lastDistance) / deltaTime;
 
-  //     Serial.println(brakingCategory);
-  //     Serial.println(outputName);
-  //     Serial.println();
+      brakingCategory = brakeController.getBrakeLevel(currentDistance, myMotor._dutyCycle);
+      outputName = brakeController.getBrakeLevelName(brakingCategory);
 
-  //     Serial.print("Distance: ");
-  //     Serial.print(currentDistance);
-  //     Serial.print(" mm, Relative Speed: ");
-  //     Serial.print(relativeSpeed);
-  //     Serial.print(" mm/s, Current PWM Duty Cycle: ");
-  //     Serial.print(myMotor._dutyCycle);
-  //     Serial.println(" (0-255)");
+      Serial.println("=====");
+      Serial.println(brakingCategory);
+      Serial.println(outputName);
+      Serial.println();
 
-  //     String message = "speed: " + String(abs(relativeSpeed)) + ", distance: " + String(currentDistance);
-  //     webSocket.send(message);
+      if (currentDistance < emergencyDistance)
+      {
+        myMotor.rapidBraking();
+      }
+      else if (currentDistance < brakeDistance)
+      {
+        if (outputName == "tiga")
+        {
+          myMotor.apply3StageBrake(relativeSpeed);
+        }
+        else if (outputName == "empat")
+        {
+          myMotor.apply4StageBrake(relativeSpeed);
+        }
+        else if (outputName == "lima")
+        {
+          myMotor.apply5StageBrake(relativeSpeed);
+        }
 
-  //     myMotor.accelerateMotor();
-  //   }
-  // }
+        if (relativeSpeed > -30 && currentDistance >= emergencyDistance)
+        {
+          myMotor.accelerateMotor();
+        }
 
-  speed = random(2000, 5000) / 100.0;
-  distance = random(5000, 20000) / 100.0;
+        lastDistance = currentDistance;
+        lastTime = currentTime;
+      }
+
+      Serial.print("Distance: ");
+      Serial.print(currentDistance);
+      Serial.print(" mm, Relative Speed: ");
+      Serial.print(relativeSpeed);
+      Serial.print(" mm/s, Current PWM Duty Cycle: ");
+      Serial.print(myMotor._dutyCycle);
+      Serial.println(" (0-255)");
+
+      String message = "speed: " + String(abs(relativeSpeed)) + ", distance: " + String(currentDistance);
+      webSocket.send(message);
+
+      myMotor.accelerateMotor();
+    }
+  }
 
   // Create a JSON object to send current data
   DynamicJsonDocument jsonDoc(200);
-  jsonDoc["speed"] = speed;
+  jsonDoc["speed"] = speed; /* dikirim */
   jsonDoc["distanceFront"] = distance;
-  jsonDoc["distanceBack"] = distanceBack;
+  jsonDoc["distanceBack"] = 0;
   // Serialize JSON to a string
   String jsonString;
   serializeJson(jsonDoc, jsonString);
 
   // Send JSON string over WebSocket
   webSocket.send(jsonString);
-
-  delay(200);
 }

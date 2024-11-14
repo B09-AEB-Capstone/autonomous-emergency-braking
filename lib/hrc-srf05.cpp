@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
-const int trigPin = 5;
-const int echoPin = 21;
+const int trigPin = 16;
+const int echoPin = 17;
 
 #define SOUND_SPEED 0.034
 #define CM_TO_INCH 0.393701

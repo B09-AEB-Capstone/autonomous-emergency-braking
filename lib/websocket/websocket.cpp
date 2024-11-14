@@ -2,7 +2,7 @@
 
 using namespace websockets;
 
-extern int distanceBack;
+extern int initialSpeed;
 
 WebsocketsClient client;
 
@@ -89,9 +89,9 @@ void WebSocket::onMessage(WebsocketsMessage message)
     // Extract initialSpeed value and assign it to distanceBack
     if (doc.containsKey("initialSpeed"))
     {
-        distanceBack = doc["initialSpeed"];
-        Serial.print("initialSpeed set to distanceBack: ");
-        Serial.println(distanceBack);
+        initialSpeed = doc["initialSpeed"];
+        Serial.print("initialSpeed set to: ");
+        Serial.println(initialSpeed);
     }
     else
     {
