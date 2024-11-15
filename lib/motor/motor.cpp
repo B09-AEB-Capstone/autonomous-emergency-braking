@@ -13,44 +13,44 @@ motor::motor(int pin1, int pin2, int pin3, int pin4)
     digitalWrite(pin4, HIGH);
 }
 
-void motor::apply3StageBrake(float speed)
+void motor::apply3StageBrake(float distance)
 {
     int decrement = 0;
-    if (speed > -75 && speed <= -30)
+    if (distance > 450 && distance <= 700)
     {
-        decrement = 20;
+        decrement = 35;
     }
-    else if (speed > -150 && speed <= -75)
+    else if (distance > 200 && distance <= 450)
     {
-        decrement = 30;
+        decrement = 75;
     }
-    else if (speed <= -150)
+    else if (distance <= 200)
     {
-        decrement = 80;
+        decrement = 90;
     }
-
+    Serial.print("3 stage");
     // Serial.println(decrement);
     updateDutyCycle(decrement);
 }
 
-void motor::apply4StageBrake(float speed)
+void motor::apply4StageBrake(float distance)
 {
     int decrement = 0;
-    if (speed > -50 && speed <= -30)
+    if (distance > 600 && distance <=750)
     {
-        decrement = 15;
+        decrement = 38;
     }
-    else if (speed > -100 && speed <= -50)
+    else if (distance > 450 && distance <= 600)
     {
-        decrement = 30;
+        decrement = 48;
     }
-    else if (speed > -150 && speed <= -100)
+    else if (distance > 250 && distance <= 450)
     {
-        decrement = 45;
+        decrement = 68;
     }
-    else if (speed <= -150)
+    else if (distance <= 250)
     {
-        decrement = 60;
+        decrement = 83;
     }
 
     Serial.print("4 stage");
@@ -58,28 +58,28 @@ void motor::apply4StageBrake(float speed)
     updateDutyCycle(decrement);
 }
 
-void motor::apply5StageBrake(float speed)
+void motor::apply5StageBrake(float distance)
 {
     int decrement = 0;
-    if (speed > -60 && speed <= -30)
+    if (distance > 740 && distance <= 820)
     {
-        decrement = 12;
+        decrement = 28;
     }
-    else if (speed > -90 && speed <= -60)
+    else if (distance > 600 && distance <= 740)
     {
-        decrement = 24;
+        decrement = 37;
     }
-    else if (speed > -120 && speed <= -90)
+    else if (distance > 400 && distance <= 600)
     {
-        decrement = 36;
+        decrement = 45;
     }
-    else if (speed > -150 && speed <= -120)
+    else if (distance > 250 && distance <= 400)
     {
-        decrement = 48;
+        decrement = 64;
     }
-    else if (speed <= -150)
+    else if (distance <= 250)
     {
-        decrement = 60;
+        decrement = 88;
     }
 
     Serial.print("5 stage");
@@ -105,7 +105,7 @@ void motor::rapidBraking()
     if (currentMillis - _previousBrakingMillis >= _rapidBrakingInterval)
     {
         _previousBrakingMillis = currentMillis;
-        _dutyCycle = max(0, _dutyCycle - 100);
+        _dutyCycle = max(0, _dutyCycle - 115);
         ledcWrite(pin1, _dutyCycle);
         ledcWrite(pin3, _dutyCycle);
     }

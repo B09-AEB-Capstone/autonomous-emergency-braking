@@ -20,8 +20,8 @@ int16_t lastDistance = 0;
 float relativeSpeed = 0.0;
 int16_t currentDistance = 0;
 
-const int brakeDistance = 400;
-const int emergencyDistance = 100;
+const int brakeDistance = 1000;
+const int emergencyDistance = 175;
 
 float speed = 0;
 float distance = 0;
@@ -36,7 +36,7 @@ const int echoPin = 17;
 #define CM_TO_INCH 0.393701
 
 long duration;
-float distanceCm;
+float distance_back;
 float distanceInch;
 
 FuzzyBrakeController brakeController;
@@ -46,6 +46,9 @@ String outputName;
 void setup()
 {
   Serial.begin(9600);
+
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
   Wire.begin(22, 21);
   if (!vl53.begin(0x29, &Wire))
@@ -69,18 +72,22 @@ void loop()
   webSocket.loop();
 
   /* ultrasonik */
-  // digitalWrite(trigPin, LOW);
-  // delayMicroseconds(2);
-  // digitalWrite(trigPin, HIGH);
-  // delayMicroseconds(10);
-  // digitalWrite(trigPin, LOW);
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
 
-  // duration = pulseIn(echoPin, HIGH);
-  // distanceCm = duration * SOUND_SPEED / 2;
+  duration = pulseIn(echoPin, HIGH);
+  distance_back = duration * SOUND_SPEED / 2 * 10;
+
+  Serial.println();
+  Serial.println(distance_back);
+  Serial.println();
   /* */
 
-  // brakingCategory = brakeController.getBrakeLevel(distanceCm, myMotor._dutyCycle);
-  // outputName = brakeController.getBrakeLevelName(brakingCategory);
+  brakingCategory = brakeController.getBrakeLevel(distance_back, myMotor._dutyCycle);
+  outputName = brakeController.getBrakeLevelName(brakingCategory);
 
   if (vl53.dataReady())
   {
@@ -101,7 +108,15 @@ void loop()
       }
       else if (currentDistance < brakeDistance)
       {
-          myMotor.apply3StageBrake(relativeSpeed);
+        if (outputName == "tiga") {
+          myMotor.apply3StageBrake(currentDistance);
+        }
+        else if (outputName == "empat") {
+          myMotor.apply4StageBrake(currentDistance);
+        }
+        else if (outputName == "lima") {
+          myMotor.apply5StageBrake(currentDistance);
+        }
 
         if (relativeSpeed > -30 && currentDistance >= emergencyDistance)
         {
@@ -128,7 +143,7 @@ void loop()
   DynamicJsonDocument jsonDoc(200);
   jsonDoc["speed"] = myMotor._dutyCycle; /* dikirim */
   jsonDoc["distanceFront"] = currentDistance;
-  jsonDoc["distanceBack"] = 0;
+  jsonDoc["distanceBack"] = distance_back;
   // Serialize JSON to a string
   String jsonString;
   serializeJson(jsonDoc, jsonString);
@@ -138,3 +153,49 @@ void loop()
 
   delay(200);
 }
+
+// #include <Arduino.h>
+
+// #include <Adafruit_VL53L1X.h>
+// #include <ArduinoJson.h>
+
+// #include "websocket.h"
+// #include "motor.h"
+// #include "fuzzyBrakeController.h"
+
+// const int trigPin = 16;
+// const int echoPin = 17;
+
+// #define SOUND_SPEED 0.034
+// #define CM_TO_INCH 0.393701
+
+// long duration;
+// float distanceCm;
+// float distanceInch;
+
+// void setup()
+// {
+//     Serial.begin(9600);
+//     pinMode(trigPin, OUTPUT);
+//     pinMode(echoPin, INPUT);
+// }
+
+// void loop()
+// {
+//     digitalWrite(trigPin, LOW);
+//     delayMicroseconds(2);
+//     digitalWrite(trigPin, HIGH);
+//     delayMicroseconds(10);
+//     digitalWrite(trigPin, LOW);
+
+//     duration = pulseIn(echoPin, HIGH);
+//     distanceCm = duration * SOUND_SPEED / 2;
+//     distanceInch = distanceCm * CM_TO_INCH;
+
+//     Serial.print("Distance (cm): ");
+//     Serial.println(distanceCm);
+//     Serial.print("Distance (inch): ");
+//     Serial.println(distanceInch);
+
+//     delay(200);
+// }

@@ -11,11 +11,11 @@ FuzzyBrakeController::FuzzyBrakeController()
 void FuzzyBrakeController::initializeFuzzySets()
 {
     /* distance */
-    distanceSets[0] = new FuzzySet(0, 0, 0, 80);        /* very short */
-    distanceSets[1] = new FuzzySet(60, 110, 110, 160);  /* short */
-    distanceSets[2] = new FuzzySet(140, 170, 250, 280); /* medium */
-    distanceSets[3] = new FuzzySet(260, 300, 300, 340); /* long */
-    distanceSets[4] = new FuzzySet(320, 360, 400, 400); /* very long */
+    distanceSets[0] = new FuzzySet(250, 250, 2500, 500);        /* very short */
+    distanceSets[1] = new FuzzySet(437.5, 593.75, 593.75, 750);  /* short */
+    distanceSets[2] = new FuzzySet(687.5, 781.25, 1031.25, 1125); /* medium */
+    distanceSets[3] = new FuzzySet(1062.5, 1187.5, 1187.5, 1312.5); /* long */
+    distanceSets[4] = new FuzzySet(1250, 1375, 1500, 1500); /* very long */
 
     /* speed */
     // speedSets[0] = new FuzzySet(0, 0, 0, 30);        /* very slow */
@@ -24,11 +24,11 @@ void FuzzyBrakeController::initializeFuzzySets()
     // speedSets[3] = new FuzzySet(80, 100, 100, 120);  /* fast */
     // speedSets[4] = new FuzzySet(110, 130, 150, 150); /* very fast */
 
-    speedSets[0] = new FuzzySet(50, 50, 50, 80);     /* very slow */
-    speedSets[1] = new FuzzySet(70, 100, 100, 130);  /* slow */
-    speedSets[2] = new FuzzySet(110, 140, 180, 200); /* moderate */
-    speedSets[3] = new FuzzySet(160, 200, 200, 220); /* fast */
-    speedSets[4] = new FuzzySet(210, 230, 255, 255); /* very fast*/
+    speedSets[0] = new FuzzySet(0, 0, 0, 25);     /* very slow */
+    speedSets[1] = new FuzzySet(17, 41, 41, 66);  /* slow */
+    speedSets[2] = new FuzzySet(50, 75, 108, 124); /* moderate */
+    speedSets[3] = new FuzzySet(91, 124, 124, 141); /* fast */
+    speedSets[4] = new FuzzySet(133, 149, 170, 170); /* very fast*/
 
     /* brake */
     brakeSets[0] = new FuzzySet(0, 15, 15, 33);   /* tiga */
